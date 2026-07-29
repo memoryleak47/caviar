@@ -388,7 +388,7 @@ fn main() {
                 let results = simplify_expressions(&expression_vect, -1, params, true);
                 write_results("tmp/results_simplify.csv", &results).unwrap();
             }
-            _ => {}
+            a => panic!("unknown command: {}", a),
         }
     } else {
         //Quick executions with default parameters
