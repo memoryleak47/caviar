@@ -97,7 +97,7 @@ pub fn minimal_set_to_prove(
         ruleset_copy_names = ruleset_minimal
             .clone()
             .into_iter()
-            .map(|rule| rule.name().to_string())
+            .map(|rule| rule.name.to_string())
             .rev()
             .collect();
         data_object = object! {
@@ -207,7 +207,7 @@ pub fn minimal_set_to_prove_0_1(
                     .with_expr(&start);
 
                 if use_iteration_check {
-                    runner = runner.run_check_iteration(ruleset_copy.iter(), &goals);
+                    panic!("I removed this"); // runner = runner.run_check_iteration(ruleset_copy.iter(), &goals);
                 } else {
                     runner = runner.run(ruleset_copy.iter());
                 }
@@ -232,7 +232,7 @@ pub fn minimal_set_to_prove_0_1(
         ruleset_copy_names = ruleset_minimal
             .clone()
             .into_iter()
-            .map(|rule| rule.name().to_string())
+            .map(|rule| rule.name.to_string())
             .rev()
             .collect();
         data_object = object! {

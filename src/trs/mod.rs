@@ -42,23 +42,14 @@ pub struct ConstantFold;
 impl Analysis<Math> for ConstantFold {
     type Data = Option<i64>;
 
-    fn merge(&self, a: &mut Self::Data, b: Self::Data) -> Option<Ordering> {
-        match (a.as_mut(), &b) {
-            (None, None) => Some(Ordering::Equal),
-            (None, Some(_)) => {
-                *a = b;
-                Some(Ordering::Less)
-            }
-            (Some(_), None) => Some(Ordering::Greater),
-            (Some(_), Some(_)) => Some(Ordering::Equal),
-        }
-        // if a.is_none() && b.is_some() {
-        //     *a = b
-        // }
-        // cmp
+    fn merge(&mut self, to: &mut Self::Data, from: Self::Data) -> egg::DidMerge {
+        egg::merge_option(to, from, |a, b| {
+            assert_eq!(*a, b, "Merged non-equal constants");
+            egg::DidMerge(false, false)
+        })
     }
 
-    fn make(egraph: &EGraph, enode: &Math) -> Self::Data {
+    fn make(egraph: &mut EGraph, enode: &Math, _: Id) -> Self::Data {
         let x = |i: &Id| egraph[*i].data.as_ref();
         Some(match enode {
             Math::Constant(c) => (*c),
@@ -147,7 +138,9 @@ impl Analysis<Math> for ConstantFold {
         let class = &mut egraph[id];
         if let Some(c) = class.data.clone() {
             let added = egraph.add(Math::Constant(c.clone()));
-            let (id, _did_something) = egraph.union(id, added);
+            egraph.union(id, added);
+            let id = egraph.find(id);
+
             // to not prune, comment this out
             egraph[id].nodes.retain(|n| n.is_leaf());
 
@@ -280,7 +273,7 @@ pub fn filtered_rules(class: &json::JsonValue) -> Result<Vec<Rewrite>, Box<dyn E
     ]
     .concat();
     let rules_iter = all_rules.into_iter();
-    let rules = rules_iter.filter(|rule| class.contains(rule.name()));
+    let rules = rules_iter.filter(|rule| class.contains(JsonValue::from(&*rule.name.to_string())));
     return Ok(rules.collect());
 }
 
@@ -425,8 +418,9 @@ pub fn prove_equiv(
             .with_iter_limit(params.0)
             .with_node_limit(params.1)
             .with_time_limit(Duration::from_secs_f64(params.2))
-            .with_expr(&start)
-            .run_check_iteration(rules(ruleset_class).iter(), &[end.clone()]);
+            .with_expr(&start);
+            panic!("I removed this:");
+            // .run_check_iteration(rules(ruleset_class).iter(), &[end.clone()]);
     } else {
         // Initialize a simple runner and run it.
         runner = Runner::default()
@@ -536,8 +530,9 @@ pub fn prove(
             .with_iter_limit(params.0)
             .with_node_limit(params.1)
             .with_time_limit(Duration::from_secs_f64(params.2))
-            .with_expr(&start)
-            .run_check_iteration(rules(ruleset_class).iter(), &goals);
+            .with_expr(&start);
+            panic!("I removed this:");
+            // .run_check_iteration(rules(ruleset_class).iter(), &goals);
     } else {
         // Initialize a simple runner and run it.
         runner = Runner::default()
@@ -691,7 +686,8 @@ pub fn prove_expression_with_file_classes(
         }
 
         if use_iteration_check {
-            runner = runner.run_check_iteration_id(rules.iter(), &goals, id);
+            panic!("I removed this");
+            // runner = runner.run_check_iteration_id(rules.iter(), &goals, id);
         } else {
             runner = runner.run(rules.iter());
         }
@@ -1201,8 +1197,9 @@ pub fn prove_pulses(
                 .with_iter_limit(params.0)
                 .with_node_limit(params.1)
                 .with_time_limit(Duration::from_secs_f64(threshold))
-                .with_expr(&expr)
-                .run_check_iteration(rules(ruleset_class).iter(), &goals);
+                .with_expr(&expr);
+                panic!("I removed this:");
+                // .run_check_iteration(rules(ruleset_class).iter(), &goals);
         } else {
             runner = Runner::default()
                 .with_iter_limit(params.0)
@@ -1406,14 +1403,18 @@ pub fn prove_pulses_npp(
 
         if use_iteration_check {
             //Reinitialize the runner and run equality saturation using ILC
-            let (temp_runner, impo_time) = Runner::default()
+
+            /* let (temp_runner, impo_time) = ...
+            Runner::default()
                 .with_iter_limit(params.0)
                 .with_node_limit(params.1)
                 .with_time_limit(Duration::from_secs_f64(threshold))
-                .with_expr(&expr)
-                .run_fast(rules(ruleset_class).iter(), &goals, check_npp);
-            runner = temp_runner;
-            total_time += impo_time;
+                .with_expr(&expr);
+            */
+            panic!("I removed this:");
+                // .run_fast(rules(ruleset_class).iter(), &goals, check_npp);
+            // runner = temp_runner;
+            // total_time += impo_time;
         } else {
             //Reinitialize the runner and run equality saturation
             runner = Runner::default()
@@ -1548,14 +1549,17 @@ pub fn prove_npp(
     }
     // Enable the use of the iterative check technique
     if use_iteration_check {
+        /*
         let (runner_temp, impo_time) = Runner::default()
             .with_iter_limit(params.0)
             .with_node_limit(params.1)
             .with_time_limit(Duration::from_secs_f64(params.2))
-            .with_expr(&start)
-            .run_fast(rules(ruleset_class).iter(), &goals, check_npp);
+            .with_expr(&start);
+            // .run_fast(rules(ruleset_class).iter(), &goals, check_npp);
         runner = runner_temp;
         total_time += impo_time;
+        */
+        panic!("I removed this:");
     } else {
         //Run simple ES.
         runner = Runner::default()
