@@ -77,8 +77,8 @@ pub fn minimal_set_to_prove(
                 .with_iter_limit(params.0)
                 .with_node_limit(params.1)
                 .with_time_limit(Duration::from_secs_f64(params.2))
-                .with_expr(&start)
-                .run(ruleset_copy.iter());
+                .with_expr(&start);
+            runner = crate::trs::run_sched(runner, &ruleset_copy, params.1, Duration::from_secs_f64(params.2));
             id = runner.egraph.find(*runner.roots.last().unwrap());
             matches = end.search_eclass(&runner.egraph, id);
             if matches.is_none() {
@@ -209,7 +209,7 @@ pub fn minimal_set_to_prove_0_1(
                 if use_iteration_check {
                     panic!("I removed this"); // runner = runner.run_check_iteration(ruleset_copy.iter(), &goals);
                 } else {
-                    runner = runner.run(ruleset_copy.iter());
+                    runner = crate::trs::run_sched(runner, &ruleset_copy, params.1, Duration::from_secs_f64(params.2));
                 }
                 id = runner.egraph.find(*runner.roots.last().unwrap());
                 matches = goals.iter().all(|goal| {

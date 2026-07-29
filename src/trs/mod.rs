@@ -8,6 +8,23 @@ use egg::*;
 
 use crate::structs::{ResultStructure, Rule};
 
+
+pub fn run_sched(runner: Runner<Math, ConstantFold>, rws: &[Rewrite], node_limit: usize, time_limit: Duration) -> Runner<Math, ConstantFold> {
+    use crate::scheduler;
+
+    let limits = scheduler::Limits {
+        node_limit,
+        time_limit,
+    };
+    let cfg = scheduler::CostConfig {
+        cf: |_| 1, // AstSize
+        offset: 100,
+        unreachable_cost: 100_000,
+    };
+    scheduler::run(runner, rws, limits, cfg)
+}
+
+
 // Defining aliases to reduce code.
 pub type EGraph = egg::EGraph<Math, ConstantFold>;
 pub type Rewrite = egg::Rewrite<Math, ConstantFold>;
@@ -352,8 +369,8 @@ pub fn simplify(
         .with_iter_limit(params.0)
         .with_node_limit(params.1)
         .with_time_limit(Duration::from_secs_f64(params.2))
-        .with_expr(&start)
-        .run(rules(ruleset_class).iter());
+        .with_expr(&start);
+    let runner = crate::trs::run_sched(runner, &rules(ruleset_class), params.1, Duration::from_secs_f64(params.2));
 
     //Get the ID of the root eclass.
     let id = runner.egraph.find(*runner.roots.last().unwrap());
@@ -410,7 +427,7 @@ pub fn prove_equiv(
     let start: RecExpr<Math> = start_expression.parse().unwrap();
     let end: Pattern<Math> = end_expressions.parse().unwrap();
     let result: bool;
-    let runner;
+    let mut runner;
     let best_expr_string;
     // Initialize the runner and run it using the ILC contribution.
     if use_iteration_check {
@@ -427,8 +444,8 @@ pub fn prove_equiv(
             .with_iter_limit(params.0)
             .with_node_limit(params.1)
             .with_time_limit(Duration::from_secs_f64(params.2))
-            .with_expr(&start)
-            .run(rules(ruleset_class).iter());
+            .with_expr(&start);
+        runner = crate::trs::run_sched(runner, &rules(ruleset_class), params.1, Duration::from_secs_f64(params.2));
     }
     // Get the ID of the root eclass.
     let id = runner.egraph.find(*runner.roots.last().unwrap());
@@ -512,7 +529,7 @@ pub fn prove(
     let end_0: Pattern<Math> = "0".parse().unwrap();
     // Set up the goals we will check for.
     let goals = [end_0.clone(), end_1.clone()];
-    let runner: Runner<Math, ConstantFold>;
+    let mut runner: Runner<Math, ConstantFold>;
     let mut result = false;
     let mut proved_goal_index = 0;
     let id;
@@ -539,8 +556,8 @@ pub fn prove(
             .with_iter_limit(params.0)
             .with_node_limit(params.1)
             .with_time_limit(Duration::from_secs_f64(params.2))
-            .with_expr(&start)
-            .run(rules(ruleset_class).iter());
+            .with_expr(&start);
+        runner = crate::trs::run_sched(runner, &rules(ruleset_class), params.1, Duration::from_secs_f64(params.2));
     }
     // Get the ID of the root eclass.
     id = runner.egraph.find(*runner.roots.last().unwrap());
@@ -689,7 +706,9 @@ pub fn prove_expression_with_file_classes(
             panic!("I removed this");
             // runner = runner.run_check_iteration_id(rules.iter(), &goals, id);
         } else {
-            runner = runner.run(rules.iter());
+            // TODO am not confident that I set the limits correct here.
+            panic!("so I'll panic if I ever use this just in-case");
+            runner = crate::trs::run_sched(runner, &rules, params.1, Duration::from_secs_f64(time_per_class));
         }
         // Get the execution time of the cluster of rules.
         let class_time: f64 = runner.iterations.iter().map(|i| i.total_time).sum();
@@ -1201,6 +1220,7 @@ pub fn prove_pulses(
                 panic!("I removed this:");
                 // .run_check_iteration(rules(ruleset_class).iter(), &goals);
         } else {
+            panic!("not ported to sched");
             runner = Runner::default()
                 .with_iter_limit(params.0)
                 .with_node_limit(params.1)
@@ -1417,6 +1437,8 @@ pub fn prove_pulses_npp(
             // total_time += impo_time;
         } else {
             //Reinitialize the runner and run equality saturation
+
+            panic!("not ported to sched");
             runner = Runner::default()
                 .with_iter_limit(params.0)
                 .with_node_limit(params.1)
@@ -1562,6 +1584,7 @@ pub fn prove_npp(
         panic!("I removed this:");
     } else {
         //Run simple ES.
+        panic!("not ported to sched");
         runner = Runner::default()
             .with_iter_limit(params.0)
             .with_node_limit(params.1)
