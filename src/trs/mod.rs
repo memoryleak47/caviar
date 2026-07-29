@@ -18,7 +18,7 @@ pub fn run_sched(runner: Runner<Math, ConstantFold>, rws: &[Rewrite], node_limit
     };
     let cfg = scheduler::CostConfig {
         cf: |_| 1, // AstSize
-        offset: 100,
+        offset: 12,
         unreachable_cost: 100_000,
     };
     scheduler::run(runner, rws, limits, cfg)
