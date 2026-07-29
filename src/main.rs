@@ -18,6 +18,8 @@ mod io;
 mod rules;
 mod structs;
 
+mod scheduler;
+
 /// Runs Simple Caviar to prove the expressions passed as vector using the different params passed.
 #[allow(dead_code)]
 fn prove_expressions(

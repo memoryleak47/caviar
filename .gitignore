@@ -10,5 +10,7 @@ tmp/*
 !halide_rules/.gitkeep
 !tmp/.gitkeep
 
+src/scheduler.rs
+
 **/results/
 **/tmp/
