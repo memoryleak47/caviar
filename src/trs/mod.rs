@@ -61,7 +61,11 @@ impl Analysis<Math> for ConstantFold {
 
     fn merge(&mut self, to: &mut Self::Data, from: Self::Data) -> egg::DidMerge {
         egg::merge_option(to, from, |a, b| {
-            if *a != b { eprintln!("Merged non-equal constants {a} and {b}"); }
+            if *a != b {
+                use std::sync::OnceLock;
+                static PRINT_ONCE: OnceLock<()> = OnceLock::new();
+                PRINT_ONCE.get_or_init(|| println!("==\nMerged non-equal constants {a} and {b}!\n=="));
+            }
             egg::DidMerge(false, false)
         })
     }
