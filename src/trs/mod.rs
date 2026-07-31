@@ -12,6 +12,20 @@ use crate::structs::{ResultStructure, Rule};
 pub fn run_sched(runner: Runner<Math, ConstantFold>, rws: &[Rewrite], node_limit: usize, time_limit: Duration) -> Runner<Math, ConstantFold> {
     use crate::scheduler;
 
+    let mut infos = (0, 0); // (size, it)
+    let runner = runner.with_hook(move |runner| {
+        let size = runner.egraph.total_size();
+        let it = runner.iterations.len();
+
+        if infos.0 != size {
+            infos = (size, it);
+        } else if it >= 1000 + infos.1 {
+            return Err(format!("Probably converged"))
+        }
+
+        Ok(())
+    });
+
     let limits = scheduler::Limits {
         node_limit,
         time_limit,
