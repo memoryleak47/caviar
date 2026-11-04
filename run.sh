@@ -2,5 +2,5 @@
 
 cp "$1" src/scheduler.rs
 
-file="data.csv"
+file="full.csv"
 cargo run --release simplify $file 10000000 10000000 3
